@@ -1,0 +1,179 @@
+import { Play, Volume2, VolumeX, Maximize } from 'lucide-react';
+import { useState, useRef } from 'react';
+import ScrollReveal from '@/components/ui/scroll-reveal';
+
+interface VideoItem {
+  id: number;
+  src: string;
+  title: string;
+  description: string;
+}
+
+const videos: VideoItem[] = [
+  {
+    id: 1,
+    src: '/videos/customer-video-1.mp4',
+    title: 'تجربة تركيب قطعة',
+    description: 'قطعة غيار أصلية مركبة وتعمل بكفاءة عالية',
+  },
+  {
+    id: 2,
+    src: '/videos/customer-video-2.mp4',
+    title: 'تجربة عميل',
+    description: 'شاهد جودة القطع وأدائها الممتاز',
+  },
+  {
+    id: 3,
+    src: '/videos/customer-video-3.mp4',
+    title: 'أداء ممتاز',
+    description: 'القطعة تعمل بشكل مثالي بعد التركيب',
+  },
+];
+
+const VideoCard = ({ video }: { video: VideoItem }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const handleFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      } else if ((videoRef.current as any).webkitRequestFullscreen) {
+        (videoRef.current as any).webkitRequestFullscreen();
+      } else if ((videoRef.current as any).webkitEnterFullscreen) {
+        (videoRef.current as any).webkitEnterFullscreen();
+      }
+      // Unmute and play in fullscreen
+      videoRef.current.muted = false;
+      setIsMuted(false);
+      if (!isPlaying) {
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  return (
+    <div className="group relative bg-card border border-border rounded-2xl overflow-hidden shadow-card transition-all duration-300 hover:shadow-lg hover:border-primary/30">
+      {/* Video Container */}
+      <div 
+        className="relative aspect-[9/16] cursor-pointer"
+        onClick={togglePlay}
+      >
+        <video
+          ref={videoRef}
+          src={video.src}
+          className="w-full h-full object-cover"
+          loop
+          muted={isMuted}
+          playsInline
+          onEnded={() => setIsPlaying(false)}
+        />
+        
+        {/* Play Overlay */}
+        {!isPlaying && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity">
+            <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-glow transition-transform group-hover:scale-110">
+              <Play className="w-8 h-8 text-primary-foreground fill-current mr-[-2px]" />
+            </div>
+          </div>
+        )}
+
+        {/* Controls */}
+        <div className="absolute bottom-3 left-3 flex gap-2">
+          {/* Mute Button */}
+          <button
+            onClick={toggleMute}
+            className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+            aria-label={isMuted ? "تشغيل الصوت" : "كتم الصوت"}
+          >
+            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+          </button>
+          
+          {/* Fullscreen Button */}
+          <button
+            onClick={handleFullscreen}
+            className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+            aria-label="ملء الشاشة"
+          >
+            <Maximize className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Video Badge */}
+        <div className="absolute top-3 right-3 bg-primary/90 text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
+          فيديو حقيقي
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="p-4">
+        <h3 className="font-bold text-lg mb-1">{video.title}</h3>
+        <p className="text-muted-foreground text-sm">{video.description}</p>
+      </div>
+    </div>
+  );
+};
+
+const CustomerVideos = () => {
+  return (
+    <section className="py-16 bg-secondary/30">
+      <div className="container mx-auto px-4">
+        {/* Section Header */}
+        <ScrollReveal variant="fadeUp">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-4">
+              <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <span className="text-primary text-sm font-medium">دليل اجتماعي</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">تجربة عملائنا</h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              شاهد القطع وهي مركبة وتعمل بكفاءة عالية - دليل حقيقي على جودة منتجاتنا
+            </p>
+          </div>
+        </ScrollReveal>
+
+        {/* Videos Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          {videos.map((video, index) => (
+            <ScrollReveal key={video.id} variant="scale" delay={index * 0.15}>
+              <VideoCard video={video} />
+            </ScrollReveal>
+          ))}
+        </div>
+
+        {/* Trust Badge */}
+        <ScrollReveal variant="fadeUp" delay={0.5}>
+          <div className="mt-10 text-center">
+            <p className="text-muted-foreground text-sm">
+              ✨ فيديوهات حقيقية من عملائنا - شاركنا تجربتك عبر الواتساب
+            </p>
+          </div>
+        </ScrollReveal>
+      </div>
+    </section>
+  );
+};
+
+export default CustomerVideos;

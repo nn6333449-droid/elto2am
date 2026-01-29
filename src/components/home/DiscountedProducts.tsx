@@ -1,0 +1,63 @@
+import { Link } from 'react-router-dom';
+import { useDiscountedProducts } from '@/hooks/useProducts';
+import ProductCard from '@/components/products/ProductCard';
+import { Button } from '@/components/ui/button';
+import { Percent, ArrowLeft, Loader2 } from 'lucide-react';
+import ScrollReveal from '@/components/ui/scroll-reveal';
+
+const DiscountedProducts = () => {
+  const { data: discountedProducts = [], isLoading } = useDiscountedProducts();
+
+  // Show only first 4
+  const displayProducts = discountedProducts.slice(0, 4);
+
+  if (isLoading) {
+    return (
+      <section className="py-12 md:py-16 bg-gradient-to-b from-primary/5 to-background">
+        <div className="container mx-auto px-4 flex justify-center items-center min-h-[200px]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </section>
+    );
+  }
+
+  if (displayProducts.length === 0) return null;
+
+  return (
+    <section className="py-12 md:py-16 bg-gradient-to-b from-primary/5 to-background">
+      <div className="container mx-auto px-4">
+        {/* Section Header */}
+        <ScrollReveal variant="fadeUp">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Percent className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold">العروض والخصومات</h2>
+                <p className="text-muted-foreground">وفّر أكثر مع عروضنا الحصرية</p>
+              </div>
+            </div>
+            <Link to="/products?discount=true">
+              <Button variant="outline" className="gap-2">
+                عرض الكل
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </ScrollReveal>
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {displayProducts.map((product, index) => (
+            <ScrollReveal key={product.id} variant="fadeUp" delay={index * 0.1}>
+              <ProductCard product={product} />
+            </ScrollReveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default DiscountedProducts;
